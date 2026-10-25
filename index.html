@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>하나예린이의 역사앱</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --accent: #f59e0b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
+        .app-container { width: 100%; max-width: 480px; background: var(--card-bg); border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden; display: flex; flex-direction: column; min-height: 600px; }
+        header { background: linear-gradient(135deg, #4f46e5, #3730a3); color: white; padding: 20px; text-align: center; position: relative; }
+        header h1 { font-size: 1.3rem; margin-bottom: 5px; font-weight: 700; }
+        header p { font-size: 0.85rem; opacity: 0.9; }
+        .content { padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+        .screen { display: none; flex-direction: column; height: 100%; }
+        .screen.active { display: flex; }
+        .menu-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 15px; }
+        .menu-btn { background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 16px; padding: 16px; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; }
+        .menu-btn:hover { background: #e0e7ff; border-color: var(--primary); transform: translateY(-2px); }
+        .menu-btn h3 { font-size: 1rem; color: var(--primary); margin-bottom: 3px; }
+        .menu-btn span { font-size: 0.8rem; color: var(--text-sub); }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-sub); font-weight: 600; }
+        .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s ease; }
+        .question-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 20px; font-size: 1.05rem; font-weight: 600; line-height: 1.5; min-height: 110px; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .option-btn { background: white; border: 2px solid #cbd5e1; border-radius: 12px; padding: 14px; text-align: left; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; font-weight: 500; }
+        .option-btn:hover:not(:disabled) { background: #f1f5f9; border-color: var(--primary); }
+        .option-btn.correct { background: #dcfce7 !important; border-color: #22c55e !important; color: #15803d; }
+        .option-btn.wrong { background: #fee2e2 !important; border-color: #ef4444 !important; color: #b91c1c; }
+        .feedback-box { background: #eff6ff; border-left: 4px solid var(--primary); padding: 12px; border-radius: 8px; font-size: 0.85rem; color: #1e40af; margin-bottom: 15px; display: none; line-height: 1.4; }
+        .action-btn { background: var(--primary); color: white; border: none; border-radius: 14px; padding: 16px; font-size: 1rem; font-weight: bold; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .action-btn:hover { background: var(--primary-hover); }
+        .action-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+        .result-card { text-align: center; padding: 30px 10px; }
+        .result-score { font-size: 2.5rem; font-weight: bold; color: var(--primary); margin: 15px 0; }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <header>
+        <h1>🏛️ 하나예린이의 역사앱</h1>
+        <p>초등 5학년 사회(역사) 마스터 도전!</p>
+    </header>
+    <div class="content">
+        <!-- 메인 메뉴 화면 -->
+        <div id="home-screen" class="screen active">
+            <div>
+                <p style="margin-bottom: 15px; font-weight: 600; color: var(--text-main);">풀고 싶은 역사 단원을 선택해 주세요!</p>
+                <div class="menu-grid">
+                    <button class="menu-btn" onclick="startQuiz('early')">
+                        <div><h3>1. 선사 시대 ~ 고조선</h3><span>구석기부터 고조선까지</span></div>
+                        <span>👉</span>
+                    </button>
+                    <button class="menu-btn" onclick="startQuiz('three')">
+                        <div><h3>2. 삼국 시대와 남북국</h3><span>고구려, 백제, 신라, 발해</span></div>
+                        <span>👉</span>
+                    </button>
+                    <button class="menu-btn" onclick="startQuiz('goryeo')">
+                        <div><h3>3. 고려 시대</h3><span>거란·몽골 침입과 문화</span></div>
+                        <span>👉</span>
+                    </button>
+                    <button class="menu-btn" onclick="startQuiz('joseon')">
+                        <div><h3>4. 조선 시대</h3><span>세종대왕, 임진왜란, 실학</span></div>
+                        <span>👉</span>
+                    </button>
+                    <button class="menu-btn" onclick="startQuiz('modern')">
+                        <div><h3>5. 개항기 ~ 근현대사</h3><span>독립운동과 대한민국</span></div>
+                        <span>👉</span>
+                    </button>
+                    <button class="menu-btn" onclick="startQuiz('all')">
+                        <div><h3>⭐ 전체 100문제 모의고사</h3><span>전체 범위 실력 테스트</span></div>
+                        <span>🔥</span>
+                    </button>
+                </div>
+            </div>
+            <div style="text-align: center; font-size: 0.75rem; color: var(--text-sub); margin-top: 20px;">Made for Hanyerin ❤️</div>
+        </div>
+
+        <!-- 퀴즈 풀이 화면 -->
+        <div id="quiz-screen" class="screen">
+            <div>
+                <div class="quiz-header">
+                    <span id="quiz-category-title">선사 시대</span>
+                    <span id="quiz-progress-text">1 / 10</span>
+                </div>
+                <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+                <div id="question-box" class="question-box">문제가 여기에 나타납니다.</div>
+                <div id="options-list" class="options-list"></div>
+                <div id="feedback-box" class="feedback-box"></div>
+            </div>
+            <button id="next-btn" class="action-btn" onclick="nextQuestion()" style="display: none;">다음 문제로</button>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="result-screen" class="screen" style="justify-content: center;">
+            <div class="result-card">
+                <h2>🎉 퀴즈 완료!</h2>
+                <div id="result-score" class="result-score">80점</div>
+                <p id="result-message" style="color: var(--text-sub); margin-bottom: 25px;">참 잘했어요! 역사 박사가 다 되었네요!</p>
+                <button class="action-btn" onclick="goHome()">처음으로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const allQuestions = {
+        early: [
+            { q: "신석기 시대 사람들이 돌을 갈아서 만든 도구의 이름은 무엇일까요?", options: ["뗀석기", "간석기", "철제검", "청동거울"], answer: 1, explanation: "신석기 시대에는 돌을 갈아 만든 '간석기'를 사용했습니다." },
+            { q: "신석기 시대 사람들이 곡식을 저장하거나 음식을 조리하기 위해 만든 토기는?", options: ["비파형 토기", "분청사기", "빗살무늬 토기", "백자"], answer: 2, explanation: "신석기 시대의 대표적인 유물은 '빗살무늬 토기'입니다." },
+            { q: "우리 민족 최초의 국가로, 청동기 문화를 바탕으로 세워진 나라는?", options: ["고조선", "부여", "고구려", "신라"], answer: 0, explanation: "단군왕검이 세운 우리 민족 최초의 국가는 고조선입니다." },
+            { q: "고조선의 사회 규칙으로, 생명과 재산을 보호하기 위해 만들어진 법은?", options: ["율타법", "8조법", "경국대전", "대한전법"], answer: 1, explanation: "고조선에는 사람의 생명과 재산을 중요하게 여긴 '8조법'이 있었습니다." },
+            { q: "신석기 시대 사람들이 바닥을 파고 살았던 집의 이름은?", options: ["초가집", "기와집", "움집", "막집"], answer: 2, explanation: "신석기 시대 사람들은 동그랗게 바닥을 파고 만든 '움집'에서 살았습니다." },
+            { q: "청동기 시대 지배자의 무덤으로, 커다란 돌을 괴어 만든 무덤은?", options: ["고인돌", "적석총", "돌무지덧널무덤", "왕릉"], answer: 0, explanation: "청동기 시대 대표적인 지배자 무덤은 '고인돌'입니다." },
+            { q: "단군신화에서 쑥과 마늘을 먹고 사람이 된 동물은 무엇일까요?", options: ["사자", "호랑이", "곰", "여우"], answer: 2, explanation: "곰이 100일 동안 쑥과 마늘을 먹고 인간 '웅녀'가 되었습니다." },
+            { q: "고조선이 세워진 날을 기념하여 만든 우리나라의 국경일은?", options: ["개천절", "제헌절", "광복절", "삼일절"], answer: 0, explanation: "하늘이 열린 날을 기념하는 10월 3일 '개천절'입니다." },
+            { q: "청동기 시대에 농사를 지을 때 곡식의 이삭을 잘라내던 돌 도구는?", options: ["반달 돌칼", "돌도끼", "주먹도우", "살촉"], answer: 0, explanation: "곡식의 이삭을 수확할 때 '반달 돌칼'을 사용했습니다." },
+            { q: "농경과 정착 생활이 본격적으로 시작된 시대는 언제일까요?", options: ["구석기 시대", "신석기 시대", "철기 시대", "현대"], answer: 1, explanation: "신석기 시대부터 농사를 짓고 정착 생활을 시작했습니다." }
+        ],
+        three: [
+            { q: "만주 벌판까지 영토를 넓히고 광개토대왕능비를 남긴 고구려의 왕은?", options: ["장수왕", "동명성왕", "광개토대왕", "주몽"], answer: 2, explanation: "광개토대왕은 영토를 크게 넓힌 정복 군주입니다." },
+            { q: "살수에서 수나라 대군을 물리친 고구려의 장군은?", options: ["을지문덕", "연개소문", "강감찬", "김유신"], answer: 0, explanation: "을지문덕 장군이 살수에서 수나라 군대를 크게 물리쳤습니다(살수대첩)." },
+            { q: "백제의 전성기를 이끌며 마한을 정복하고 영토를 넓힌 왕은?", options: ["온조", "근초고왕", "무왕", "의자왕"], answer: 1, explanation: "근초고왕 때 백제는 전성기를 맞이하였습니다." },
+            { q: "신라의 청소년 수련 단체로, 국가의 인재를 양성하던 조직은?", options: ["삼별초", "화랑도", "별무반", "백두산호부"], answer: 1, explanation: "신라에는 심신을 단련하고 인재를 키우는 '화랑도'가 있었습니다." },
+            { q: "신라 진흥왕 때 세워져 국경을 넓힌 것을 기념하는 비석이 아닌 것은?", options: ["단양 적성비", "북한산 순수비", "광개토대왕능비", "창녕 비석"], answer: 2, explanation: "광개토대왕능비는 고구려 장수왕이 세운 비석입니다." },
+            { q: "신라 선덕여왕 때 세워진 동양에서 가장 오래된 천문대는?", options: ["황룡사", "첨성대", "불국사", "석굴암"], answer: 1, explanation: "별을 관측하던 동양 최고(最古)의 천문대인 '첨성대'입니다." },
+            { q: "고구려 유민을 이끌고 동모산 근처에 '발해'를 건국한 인물은?", options: ["대조영", "왕건", "궁예", "온조"], answer: 0, explanation: "대조영이 698년에 발해를 건국하였습니다." },
+            { q: "당나라로부터 '해동성국'이라 불리며 번성했던 나라는?", options: ["고구려", "백제", "발해", "신라"], answer: 2, explanation: "발해는 문화가 크게 번성하여 '바다 동쪽의 번성한 나라(해동성국)'라 불렸습니다." },
+            { q: "백제를 무너뜨리고 삼국 통일에 큰 공을 세운 신라의 장군은?", options: ["계백", "김유신", "이사부", "을지문덕"], answer: 1, explanation: "김유신 장군은 나·당 연합군의 주역으로 삼국 통일에 기여했습니다." },
+            { q: "완도에 청해진을 설치하고 해상 무역을 주도한 통일신라의 인물은?", options: ["최치원", "장보고", "김대성", "원효"], answer: 1, explanation: "장보고는 청해진을 바탕으로 바다를 주름잡았습니다." }
+        ],
+        goryeo: [
+            { q: "후삼국을 통일하고 918년에 고려를 건국한 왕은?", options: ["왕건", "궁예", "이성계", "견훤"], answer: 0, explanation: "태조 왕건이 후삼국을 통일하고 고려를 세웠습니다." },
+            { q: "거란의 1차 침입 때 외교 담판으로 피 한 방울 흘리지 않고 강동 6주를 얻어낸 인물은?", options: ["서희", "강감찬", "윤관", "척준경"], answer: 0, explanation: "서희의 지혜로운 외교 담판으로 강동 6주를 획득했습니다." },
+            { q: "거란의 3차 침입 때 귀주에서 거란군을 크게 물리친 장군은?", options: ["을지문덕", "강감찬", "권율", "이순신"], answer: 1, explanation: "강감찬 장군의 '귀주대첩'입니다." },
+            { q: "여진족을 물리치기 위해 윤관이 만든 특수 군대 이름은?", options: ["삼별초", "별무반", "서경군", "훈련도감"], answer: 1, explanation: "보기 드문 기병 중심의 특수 부대 '별무반'을 창설했습니다." },
+            { q: "몽골의 침입에 맞서 고려가 수도를 옮겼던 섬은?", options: ["제주도", "강화도", "진도", "거제도"], answer: 1, explanation: "몽골의 강력한 기마병을 피하기 위해 해상 방어가 유리한 강화도로 천도했습니다." },
+            { q: "팔만대장경이 현재 보관되어 있는 경남 합천의 사찰 이름은?", options: ["불국사", "해인사", "송광사", "통도사"], answer: 1, explanation: "팔만대장경은 합천 해인사에 안전하게 보관되어 있습니다." },
+            { q: "원나라의 간섭을 벗어나 정치적 개혁을 단행했던 고려의 왕은?", options: ["공민왕", "충선왕", "광종", "성종"], answer: 0, explanation: "공민왕은 반원 자주 정책과 여러 개혁 정치를 추진했습니다." },
+            { q: "세계에서 가장 오래된 금속활자 인쇄본으로, 프랑스 국립도서관에 있는 책은?", options: ["직지심체요절", "삼국사기", "팔만대장경", "훈민정음"], answer: 0, explanation: "세계 최초의 금속활자 인쇄본인 '직지(직지심체요절)'입니다." },
+            { q: "고려 시대 국제 무역항으로 아라비아 상인까지 드나들었던 곳은?", options: ["예성강 벽란도", "부산포", "원산항", "인천항"], answer: 0, explanation: "벽란도는 고려의 수도 개경과 가까운 예성강 하구의 국제 무역항이었습니다." },
+            { q: "이성계의 위화도 회군 이후 고려의 충신으로 선죽교에서 목숨을 잃은 인물은?", options: ["정도전", "정몽주", "최영", "이방원"], answer: 1, explanation: "정몽주는 고려에 대한 충절을 지키다 선죽교에서 피살되었습니다." }
+        ],
+        joseon: [
+            { q: "이성계가 고려를 무너뜨리고 1392년에 건국한 나라의 이름은?", options: ["대한제국", "조선", "부여", "고려"], answer: 1, explanation: "태조 이성계가 건국한 조선입니다." },
+            { q: "조선 세종 대에 집현전 학자들과 함께 만든 우리나라 고유 문자는?", options: ["이두", "한자", "훈민정음", "언문"], answer: 2, explanation: "백성을 가르치는 바른 소리인 '훈민정음(한글)'을 창제했습니다." },
+            { q: "세종 때 장영실 등이 만든 물시계의 이름은?", options: ["앙부일구", "자격루", "측우기", "수표교"], answer: 1, explanation: "시간을 자동으로 알려주는 물시계는 '자격루'입니다." },
+            { q: "임진왜란 당시 한산도 앞바다에서 학익진 전법으로 왜군을 대파한 장군은?", options: ["권율", "이순신", "김시민", "신립"], answer: 1, explanation: "이순신 장군의 뛰어난 전술이 빛난 '한산도 대첩'입니다." },
+            { q: "이순신 장군이 단 13척의 배로 133척의 적을 물리친 놀라운 해전은?", options: ["명량 대첩", "노량 해전", "당포 해전", "사천 해전"], answer: 0, explanation: "신에게는 아직 12척(실제 13척)의 배가 있다는 명언과 함께 승리한 '명량 대첩'입니다." },
+            { q: "조선 후기 실학자 중 거중기를 발명하고 수원 화성을 축조하는 데 기여한 인물은?", options: ["정약용", "이익", "홍대용", "박지원"], answer: 0, explanation: "다산 정약용은 과학 기술을 이용해 수원 화성 설계와 거중기를 만들었습니다." },
+            { q: "대동여지도를 제작하여 조선의 지리 정보를 상세히 밝힌 지리학자는?", options: ["정상기", "김정호", "이중환", "신경준"], answer: 1, explanation: "고산자 김정호가 발로 뛰며 '대동여지도'를 목판에 새겨 만들었습니다." },
+            { q: "허준이 선조의 명을 받아 완성한 조선 최고의 의학 백과사전은?", options: ["향약집성방", "동의보감", "침구경", "본초강목"], answer: 1, explanation: "의성 허준이 편찬한 '동의보감'입니다." },
+            { q: "임진왜란 때 행주산성에서 권율 장군과 함께 왜군을 물리친 무기로 활약한 것은?", options: ["행주치마", "화차", "비격진천뢰", "신기전"], answer: 0, explanation: "부녀자들이 치마에 돌을 담아 날라 전투를 도왔다는 일화에서 유래한 '행주치마'입니다." },
+            { q: "조선 후기 실제 생활에 도움을 주는 학문을 연구하자며 등장한 사조는?", options: ["실학", "성리학", "불교", "노장사상"], answer: 0, explanation: "국가와 백성의 삶에 실질적으로 도움이 되는 '실학'이 발달했습니다." }
+        ],
+        modern: [
+            { q: "1919년 3월 1일, 전국에서 '대한 독립 만세'를 외치며 일어난 독립운동은?", options: ["6·10 만세운동", "3·1 운동", "광주 학생 항일 운동", "부마 항쟁"], answer: 1, explanation: "온 겨레가 함께 일어난 평화적 독립 만세 운동인 '3·1 운동'입니다." },
+            { q: "만주 하얼빈 역에서 침략의 원흉인 이토 히로부미를 처단한 의사는?", options: ["윤봉길", "안중근", "유관순", "김구"], answer: 1, explanation: "안중근 의사가 하얼빈에서 의거를 단행했습니다." },
+            { q: "상하이 훙커우 공원에서 도시락 폭탄을 던져 일제 요인들을 처단한 의사는?", options: ["이봉창", "윤봉길", "홍범도", "김좌진"], answer: 1, explanation: "윤봉길 의사의 훙커우 공원 의거입니다." },
+            { q: "청산리 전투에서 일제 대군을 상대로 큰 승리를 거둔 독립군 장군은?", options: ["홍범도", "김좌진", "지청천", "이범석"], answer: 1, explanation: "청산리 계곡 등지에서 김좌진 장군의 독립군 연합 부대가 크게 승리했습니다." },
+            { q: "3·1 운동 이후 중국 상하이에 수립되어 독립운동의 중추 역할을 한 정부는?", options: ["대한민국 임시정부", "조선민주정부", "광복회", "신민회"], answer: 0, explanation: "임시 정부가 수립되어 독립을 위해 조직적으로 활동했습니다." },
+            { q: "우리나라가 일제 강점기에서 벗어나 빛을 되찾은 날(1945년 8월 15일)은?", options: ["개천절", "제헌절", "광복절", "현충일"], answer: 2, explanation: "조국의 주권을 되찾은 기쁨의 날, 8월 15일 '광복절'입니다." },
+            { q: "1950년 6월 25일 북한군의 기습 남침으로 시작된 전쟁은?", options: ["임진왜란", "병자호란", "6·25 전쟁", "청일전쟁"], answer: 2, explanation: "동족상잔의 아픔인 '6·25 전쟁(한국전쟁)'이 발발했습니다." },
+            { q: "6·25 전쟁 당시 전쟁의 전세를 뒤집은 결정적인 연합군의 상륙 작전은?", options: ["인천 상륙 작전", "부산항 상륙 작전", "원산 상륙 작전", "평양 상륙 작전"], answer: 0, explanation: "맥아더 장군의 지휘로 성공한 '인천 상륙 작전'입니다." },
+            { q: "아우내 장터에서 만세 운동을 주도하다 옥고를 치르다 순국한 10대 독립운동가는?", options: ["윤동주", "유관순", "나혜석", "김마리아"], answer: 1, explanation: "천안 아우내 장터의 만세 운동을 이끈 열사 '유관순'입니다." },
+            { q: "대한민국 임시정부의 주석으로 활약하며 <백범일지>를 남긴 인물은?", options: ["이승만", "김구", "안창호", "여운형"], answer: 1, explanation: "백범 김구 선생은 임시정부를 끝까지 지키며 민족의 지도자로 활동했습니다." }
+        ],
+        all: []
+    };
+
+    allQuestions.all = [...allQuestions.early, ...allQuestions.three, ...allQuestions.goryeo, ...allQuestions.joseon, ...allQuestions.modern];
+
+    let currentCategory = [];
+    let currentIndex = 0;
+    let score = 0;
+    let selectedAnswer = null;
+
+    const categoryTitles = {
+        early: "1. 선사 시대 ~ 고조선",
+        three: "2. 삼국 시대와 남북국",
+        goryeo: "3. 고려 시대",
+        joseon: "4. 조선 시대",
+        modern: "5. 개항기 ~ 근현대사",
+        all: "⭐ 전체 100문제 모의고사 중 일부"
+    };
+
+    function startQuiz(type) {
+        currentCategory = [...allQuestions[type]];
+        // 섞기
+        currentCategory.sort(() => Math.random() - 0.5);
+        // 모의고사의 경우 20문제만 추출
+        if(type === 'all') {
+            currentCategory = currentCategory.slice(0, 20);
+        }
+        currentIndex = 0;
+        score = 0;
+
+        document.getElementById('quiz-category-title').innerText = categoryTitles[type];
+        document.getElementById('home-screen').classList.remove('active');
+        document.getElementById('quiz-screen').classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        selectedAnswer = null;
+        const qData = currentCategory[currentIndex];
+        document.getElementById('quiz-progress-text').innerText = `${currentIndex + 1} / ${currentCategory.length}`;
+        document.getElementById('progress-fill').style.width = `${((currentIndex + 1) / currentCategory.length) * 100}%`;
+        document.getElementById('question-box').innerText = qData.q;
+
+        const optionsList = document.getElementById('options-list');
+        optionsList.innerHTML = '';
+        
+        qData.options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = `${idx + 1}. ${opt}`;
+            btn.onclick = () => selectOption(idx);
+            optionsList.appendChild(btn);
+        });
+
+        document.getElementById('feedback-box').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'none';
+    }
+
+    function selectOption(idx) {
+        if (selectedAnswer !== null) return;
+        selectedAnswer = idx;
+        const qData = currentCategory[currentIndex];
+        const buttons = document.querySelectorAll('.option-btn');
+
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            if (i === qData.answer) {
+                btn.classList.add('correct');
+            } else if (i === idx) {
+                btn.classList.add('wrong');
+            }
+        });
+
+        if (idx === qData.answer) {
+            score += 100 / currentCategory.length;
+        }
+
+        const feedbackBox = document.getElementById('feedback-box');
+        feedbackBox.innerHTML = `💡 <b>해설:</b> ${qData.explanation}`;
+        feedbackBox.style.display = 'block';
+
+        const nextBtn = document.getElementById('next-btn');
+        nextBtn.style.display = 'block';
+        if (currentIndex === currentCategory.length - 1) {
+            nextBtn.innerText = "결과 보기";
+        } else {
+            nextBtn.innerText = "다음 문제로";
+        }
+    }
+
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < currentCategory.length) {
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-screen').classList.remove('active');
+        document.getElementById('result-screen').classList.add('active');
+        const finalScore = Math.round(score);
+        document.getElementById('result-score').innerText = `${finalScore}점`;
+        
+        const msg = document.getElementById('result-message');
+        if (finalScore >= 90) {
+            msg.innerText = "와우! 완벽한 역사 박사님이시네요! 대단해요! 🏆";
+        } else if (finalScore >= 70) {
+            msg.innerText = "참 잘했어요! 조금만 더 공부하면 만점도 문제없어요! 👍";
+        } else {
+            msg.innerText = "아쉬워요! 다시 한번 도전해서 백점에 도전해 볼까요? 💪";
+        }
+    }
+
+    function goHome() {
+        document.getElementById('result-screen').classList.remove('active');
+        document.getElementById('home-screen').classList.add('active');
+    }
+</script>
+</body>
+</html>
